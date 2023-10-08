@@ -9,25 +9,10 @@ class Lobby extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: LobbyPage(), // ใช้ LobbyPage เป็นหน้าแรก
+      home: LobbyPage(),
     );
   }
-
-  Future<List<Map<String, dynamic>>> fetchDataFromDatabase() async {
-    final String serverUrl = 'http://localhost/sever/connect.php'; // เปลี่ยนเป็น URL ของเซิร์ฟเวอร์ที่มีข้อมูล
-    final response = await http.get(Uri.parse(serverUrl));
-
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-      return data.cast<Map<String, dynamic>>();
-    } else {
-      throw Exception('ไม่สามารถดึงข้อมูลได้');
-    }
-  }
-
 }
-
-
 
 class LobbyPage extends StatefulWidget {
   @override
@@ -35,59 +20,86 @@ class LobbyPage extends StatefulWidget {
 }
 
 class _LobbyPageState extends State<LobbyPage> {
-  // สถานะเพื่อควบคุมการเปิด/ปิด Drawer
-  bool isDrawerOpen = false;
+  bool isDrawerOpen = true;
+  List<Map<String, dynamic>> data = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchDataFromServer();
+  }
+
+  Future<void> fetchDataFromServer() async {
+    final String serverUrl = 'http://localhost/sever/connect.php';
+
+    try {
+      final response = await http.get(Uri.parse(serverUrl));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body);
+        setState(() {
+          data = jsonData.cast<Map<String, dynamic>>();
+          isLoading = false;
+        });
+      } else {
+        throw Exception('ไม่สามารถดึงข้อมูลได้');
+      }
+    } catch (error) {
+      setState(() {
+        isLoading = false;
+      });
+      print('เกิดข้อผิดพลาด: $error');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Hi HAYT',
-        style: TextStyle(
-          color: Colors.white
+        title: Text(
+          'Hi HAYT',
+          style: TextStyle(
+            color: Colors.white,
+          ),
         ),
-        ),
-        backgroundColor: Colors.green, // ชื่อหน้า
+        backgroundColor: Colors.green,
       ),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
-            future: fetchDataFromDatabase(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return CircularProgressIndicator(); // แสดง Indicator รอข้อมูล
-              } else if (snapshot.hasError) {
-                return Text('เกิดข้อผิดพลาด: ${snapshot.error}');
-              } else {
-                final data = snapshot.data; // ข้อมูลที่ดึงมาจากเซิร์ฟเวอร์
-
-                if (data!.isEmpty) {
-                  return Text('ไม่พบข้อมูล');
-                }
-
-                return ListView.builder(
-                  itemCount: data?.length,
+      body: isLoading
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : data.isEmpty
+              ? Center(
+                  child: Text('ไม่พบข้อมูล'),
+                )
+              : ListView.builder(
+                  itemCount: data.length,
                   itemBuilder: (context, index) {
                     final item = data[index];
                     return Card(
                       child: ListTile(
                         title: Text('ชื่อผัก: ${item['vegetableName']}'),
-                        subtitle: Text('เวลารดน้ำ: ${item['rond']}, ใส่ปุ๋ย: ${item['fertilizer']}'),
-                        // เพิ่มส่วนอื่น ๆ ของ Card ตามต้องการ
+                        subtitle: Text(
+                            'เวลารดน้ำ: ${item['rond']}, ใส่ปุ๋ย: ${item['fertilizer']}'),
+                        trailing: IconButton(
+                          icon: Icon(Icons.delete),
+                          onPressed: () {
+                            // ทำอะไรก็ตามเมื่อปุ่มลบถูกคลิก
+                          },
+                        ),
                       ),
                     );
                   },
-                );
-              }
-            },
-          ),
-
+                ),
       drawer: Drawer(
         child: ListView(
           children: <Widget>[
             DrawerHeader(
               decoration: BoxDecoration(
-                color: Colors.green, // สีพื้นหลังของ DrawerHeader
+                color: Colors.green,
               ),
-              child: Image.asset('assets/images/logo.png'), // เนื้อหาของ DrawerHeader
+              child: Image.asset('assets/images/logo.png'),
             ),
             ListTile(
               title: Text('เพิ่มข้อมูล'),
@@ -105,19 +117,20 @@ class _LobbyPageState extends State<LobbyPage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // ทำอะไรก็ตามเมื่อ FloatingActionButton ถูกคลิก
+        onPressed: () 
+        {
           Navigator.push(
-            context, 
+            context,
             MaterialPageRoute(
               builder: (context) => add(),
-              ),
-            );
+            ),
+          );
         },
         child: Icon(Icons.add),
-        backgroundColor: Colors.green, // ใส่ไอคอนใน FloatingActionButton
+        backgroundColor: Colors.green,
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat, // ตำแหน่งของ FloatingActionButton ที่มุมล่างขวา
+      floatingActionButtonLocation:
+          FloatingActionButtonLocation.endFloat,
     );
   }
 }
