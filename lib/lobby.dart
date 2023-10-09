@@ -11,9 +11,13 @@ class Lobby extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: LobbyPage(),
+      routes: {
+        '/add': (context) => add(),
+      },
     );
   }
 }
+
 
 class LobbyPage extends StatefulWidget {
   @override
@@ -22,7 +26,7 @@ class LobbyPage extends StatefulWidget {
 
 class _LobbyPageState extends State<LobbyPage> {
   Future<List<Map<String, dynamic>>> fetchDataFromServer() async {
-    final String serverUrl = 'http://localhost/server/connect.php';
+    final String serverUrl = 'http://172.20.10.5/server/connect.php';
 
     final response = await http.get(Uri.parse(serverUrl));
 
@@ -46,74 +50,84 @@ class _LobbyPageState extends State<LobbyPage> {
         ),
         backgroundColor: Colors.green,
       ),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: fetchDataFromServer(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('เกิดข้อผิดพลาด: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('ไม่พบข้อมูล'));
-          } else {
-            return ListView.builder(
-              itemCount: snapshot.data?.length,
-              itemBuilder: (context, index) {
-                final item = snapshot.data![index];
-                return Card(
-                  child: ListTile(
-                    title: Text('ชื่อผัก: ${item['vegetableName']}'),
-                    subtitle: Text(
-                        'เวลารดน้ำ: ${item['rond']}, ใส่ปุ๋ย: ${item['fertilizer']}'),
-                    trailing: IconButton(
-                      icon: Icon(Icons.delete),
-                      onPressed: () {
-                        // ทำอะไรก็ตามเมื่อปุ่มลบถูกคลิก
-                      },
-                    ),
-                  ),
-                );
-              },
-            );
-          }
-        },
-      ),
-      drawer: Drawer(
-        child: ListView(
-          children: <Widget>[
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.green,
-              ),
-              child: Image.asset('assets/images/logo.png'),
-            ),
-            ListTile(
-              title: Text('เพิ่มข้อมูล'),
-              onTap: () {
-                // ทำอะไรก็ตามเมื่อเมนู 1 ถูกคลิก
-              },
-            ),
-            ListTile(
-              title: Text('ปิดการแจ้งเตือน'),
-              onTap: () {
-                // ทำอะไรก็ตามเมื่อเมนู 2 ถูกคลิก
-              },
-            ),
-          ],
+              body: FutureBuilder<List<Map<String, dynamic>>>(
+          future: fetchDataFromServer(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('เกิดข้อผิดพลาด: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Center(child: Text('ไม่พบข้อมูล'));
+            } else {
+              final data = snapshot.data;
+              return RefreshIndicator(
+                onRefresh: () async {
+                  // คำสั่งอัปเดตข้อมูลเมื่อผู้ใช้ลากลงเพื่อรีเฟรช
+                  setState(() {});
+                },
+                child: ListView.builder(
+                  itemCount: data!.length,
+                  itemBuilder: (context, index) {
+                    final item = data[index];
+                    return Card(
+                      child: ListTile(
+                        title: Text('ชื่อผัก: ${item['vegetableName']}'),
+                        subtitle: Text(
+                          'เวลารดน้ำ: ${item['rond']}, ใส่ปุ๋ย: ${item['fertilizer']}',
+                        ),
+                        trailing: IconButton(
+                          icon: Icon(Icons.delete),
+                          onPressed: () {
+                            // ทำอะไรก็ตามเมื่อปุ่มลบถูกคลิก
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              );
+            }
+          },
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
+
+        drawer: Drawer(
+          child: ListView(
+            children: <Widget>[
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Colors.green,
+                ),
+                child: Image.asset('assets/images/logo.png', fit: BoxFit.cover),
+              ),
+              InkWell(
+                onTap: () {
+                  Navigator.pushNamed(context, '/add');
+                },
+                child: ListTile(
+                  title: Text('เพิ่มข้อมูล'),
+                ),
+              ),
+              InkWell(
+                onTap: () {
+                  // ทำอะไรก็ตามเมื่อเมนู 2 ถูกคลิก
+                },
+                child: ListTile(
+                  title: Text('ปิดการแจ้งเตือน'),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+            floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => add(),
-            ),
-          );
+          Navigator.pushNamed(context, '/add');
         },
         child: Icon(Icons.add),
         backgroundColor: Colors.green,
       ),
+
       floatingActionButtonLocation:
           FloatingActionButtonLocation.endFloat,
     );
