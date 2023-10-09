@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_projecct/add.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'add.dart';
 
 void main() => runApp(Lobby());
 
@@ -20,36 +21,16 @@ class LobbyPage extends StatefulWidget {
 }
 
 class _LobbyPageState extends State<LobbyPage> {
-  bool isDrawerOpen = true;
-  List<Map<String, dynamic>> data = [];
-  bool isLoading = true;
+  Future<List<Map<String, dynamic>>> fetchDataFromServer() async {
+    final String serverUrl = 'http://localhost/server/connect.php';
 
-  @override
-  void initState() {
-    super.initState();
-    fetchDataFromServer();
-  }
+    final response = await http.get(Uri.parse(serverUrl));
 
-  Future<void> fetchDataFromServer() async {
-    final String serverUrl = 'http://localhost/sever/connect.php';
-
-    try {
-      final response = await http.get(Uri.parse(serverUrl));
-
-      if (response.statusCode == 200) {
-        final List<dynamic> jsonData = json.decode(response.body);
-        setState(() {
-          data = jsonData.cast<Map<String, dynamic>>();
-          isLoading = false;
-        });
-      } else {
-        throw Exception('ไม่สามารถดึงข้อมูลได้');
-      }
-    } catch (error) {
-      setState(() {
-        isLoading = false;
-      });
-      print('เกิดข้อผิดพลาด: $error');
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonData = json.decode(response.body);
+      return jsonData.cast<Map<String, dynamic>>();
+    } else {
+      throw Exception('ไม่สามารถดึงข้อมูลได้');
     }
   }
 
@@ -65,33 +46,38 @@ class _LobbyPageState extends State<LobbyPage> {
         ),
         backgroundColor: Colors.green,
       ),
-      body: isLoading
-          ? Center(
-              child: CircularProgressIndicator(),
-            )
-          : data.isEmpty
-              ? Center(
-                  child: Text('ไม่พบข้อมูล'),
-                )
-              : ListView.builder(
-                  itemCount: data.length,
-                  itemBuilder: (context, index) {
-                    final item = data[index];
-                    return Card(
-                      child: ListTile(
-                        title: Text('ชื่อผัก: ${item['vegetableName']}'),
-                        subtitle: Text(
-                            'เวลารดน้ำ: ${item['rond']}, ใส่ปุ๋ย: ${item['fertilizer']}'),
-                        trailing: IconButton(
-                          icon: Icon(Icons.delete),
-                          onPressed: () {
-                            // ทำอะไรก็ตามเมื่อปุ่มลบถูกคลิก
-                          },
-                        ),
-                      ),
-                    );
-                  },
-                ),
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: fetchDataFromServer(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('เกิดข้อผิดพลาด: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text('ไม่พบข้อมูล'));
+          } else {
+            return ListView.builder(
+              itemCount: snapshot.data?.length,
+              itemBuilder: (context, index) {
+                final item = snapshot.data![index];
+                return Card(
+                  child: ListTile(
+                    title: Text('ชื่อผัก: ${item['vegetableName']}'),
+                    subtitle: Text(
+                        'เวลารดน้ำ: ${item['rond']}, ใส่ปุ๋ย: ${item['fertilizer']}'),
+                    trailing: IconButton(
+                      icon: Icon(Icons.delete),
+                      onPressed: () {
+                        // ทำอะไรก็ตามเมื่อปุ่มลบถูกคลิก
+                      },
+                    ),
+                  ),
+                );
+              },
+            );
+          }
+        },
+      ),
       drawer: Drawer(
         child: ListView(
           children: <Widget>[
@@ -117,8 +103,7 @@ class _LobbyPageState extends State<LobbyPage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () 
-        {
+        onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(
