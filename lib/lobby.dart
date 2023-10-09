@@ -25,18 +25,25 @@ class LobbyPage extends StatefulWidget {
 }
 
 class _LobbyPageState extends State<LobbyPage> {
-  Future<List<Map<String, dynamic>>> fetchDataFromServer() async {
-    final String serverUrl = 'http://172.20.10.5/server/connect.php';
+Future<List<Map<String, dynamic>>> fetchDataFromServer() async {
+  final String serverUrl = 'http://172.21.244.137/server/connect.php';
 
+  try {
     final response = await http.get(Uri.parse(serverUrl));
-
     if (response.statusCode == 200) {
       final List<dynamic> jsonData = json.decode(response.body);
       return jsonData.cast<Map<String, dynamic>>();
     } else {
-      throw Exception('ไม่สามารถดึงข้อมูลได้');
+      throw Exception('ไม่สามารถดึงข้อมูลได้: ${response.statusCode}');
     }
+  } catch (error) {
+    print('เกิดข้อผิดพลาดในการเชื่อมต่อ: $error');
+    // คุณอาจต้องการคืนข้อมูลว่างหรืออื่น ๆ ที่เหมาะสมในกรณีที่เกิดข้อผิดพลาด
+    return <Map<String, dynamic>>[];
   }
+}
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +117,7 @@ class _LobbyPageState extends State<LobbyPage> {
               ),
               InkWell(
                 onTap: () {
-                  // ทำอะไรก็ตามเมื่อเมนู 2 ถูกคลิก
+
                 },
                 child: ListTile(
                   title: Text('ปิดการแจ้งเตือน'),

@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_application_projecct/lobby.dart';
 import 'package:http/http.dart' as http;
@@ -21,12 +20,12 @@ class TextEntryPage extends StatefulWidget {
 }
 
 class _TextEntryPageState extends State<TextEntryPage> {
-  String selectedDropdownValue = 'รดน้ำ1ครั้งต่อวัน';
+  String selectedDropdownValue = '1perday';
   TextEditingController textEditingController = TextEditingController();
   bool useFertilizer = false; // สถานะของช่องใส่ปุ๋ย
 
   // เพิ่ม URL ของเซิร์ฟเวอร์ที่คุณต้องการส่งข้อมูลไป
-  final String serverUrl = 'http://localhost/sever/connect.php';
+  final String serverUrl = 'http://172.21.244.137/sever/insertvega.php'; // แก้ไข URL ตามเซิร์ฟเวอร์ของคุณ
 
   // เมื่อกดปุ่ม "OK"
   void sendDataToServer() async {
@@ -34,10 +33,11 @@ class _TextEntryPageState extends State<TextEntryPage> {
     String fertilizerStatus = useFertilizer ? 'ใส่ปุ๋ย' : 'ไม่ใส่ปุ๋ย';
 
     // สร้างข้อมูล JSON ที่จะส่งไปยังเซิร์ฟเวอร์
-    Map<String, dynamic> data = {
-      'name': vegetableName,
-      'description': selectedDropdownValue + ', ' + fertilizerStatus,
-    };
+      Map<String, dynamic> data = {
+        'vegename': vegetableName,
+        'description': selectedDropdownValue + ', ' + fertilizerStatus,
+      };
+
 
     // ส่งข้อมูลไปยังเซิร์ฟเวอร์โดยใช้ HTTP POST
     try {
@@ -82,7 +82,7 @@ class _TextEntryPageState extends State<TextEntryPage> {
 
         // รีเซ็ตสถานะ
         setState(() {
-          selectedDropdownValue = 'รดน้ำ1ครั้งต่อวัน';
+          selectedDropdownValue = '1perday';
           useFertilizer = false;
         });
 
@@ -155,9 +155,9 @@ class _TextEntryPageState extends State<TextEntryPage> {
                     });
                   },
                   items: <String>[
-                    'รดน้ำ1ครั้งต่อวัน',
-                    'รดน้ำ2ครั้งต่อวัน',
-                    'รดน้ำ3ครั้งต่อวัน',
+                    '1perday',
+                    '2perday',
+                    '3perday',
                   ].map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
@@ -199,7 +199,7 @@ class _TextEntryPageState extends State<TextEntryPage> {
                   onPressed: () {
                     textEditingController.clear();
                     setState(() {
-                      selectedDropdownValue = 'รดน้ำ1ครั้งต่อวัน';
+                      selectedDropdownValue = '1perday';
                       useFertilizer = false;
                     });
                     Navigator.of(context).push(
