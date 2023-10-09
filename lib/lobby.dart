@@ -103,7 +103,7 @@ Future<List<Map<String, dynamic>>> fetchDataFromServer() async {
             children: <Widget>[
               DrawerHeader(
                 decoration: BoxDecoration(
-                  color: Colors.green,
+                  color: Color(0xFF6C934D),
                 ),
                 child: Image.asset('assets/images/logo.png', fit: BoxFit.cover),
               ),
@@ -132,7 +132,7 @@ Future<List<Map<String, dynamic>>> fetchDataFromServer() async {
           Navigator.pushNamed(context, '/add');
         },
         child: Icon(Icons.add),
-        backgroundColor: Colors.green,
+        backgroundColor: Color(0xFF6C934D),
       ),
 
       floatingActionButtonLocation:

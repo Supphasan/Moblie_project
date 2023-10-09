@@ -123,7 +123,7 @@ class _TextEntryPageState extends State<TextEntryPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('กรอกข้อมูลผัก'),
-        backgroundColor: Colors.green,
+        backgroundColor: Color(0xFF6C934D),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -146,7 +146,7 @@ class _TextEntryPageState extends State<TextEntryPage> {
             SizedBox(height: 16.0),
             Row(
               children: <Widget>[
-                Text('ชื่อรดน้ำ: ', style: TextStyle(fontSize: 18.0)),
+                Text('รดน้ำ: ', style: TextStyle(fontSize: 18.0)),
                 DropdownButton<String>(
                   value: selectedDropdownValue,
                   onChanged: (String? newValue) {
@@ -190,7 +190,7 @@ class _TextEntryPageState extends State<TextEntryPage> {
                     sendDataToServer();
                   },
                   style: ElevatedButton.styleFrom(
-                    primary: Colors.green,
+                    primary: Color(0xFF6C934D),
                   ),
                   child: Text('OK'),
                 ),
@@ -209,7 +209,7 @@ class _TextEntryPageState extends State<TextEntryPage> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    primary: Colors.green,
+                    primary: Color(0xFF6C934D),
                   ),
                   child: Text('Cancel', style: TextStyle(color: Colors.white)),
                 ),
